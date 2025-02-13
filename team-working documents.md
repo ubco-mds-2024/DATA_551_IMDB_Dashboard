@@ -97,7 +97,8 @@
 ---
 
 ## **5. Work Style & Collaboration Expectations**  
-- **Daily Updates:** Each team member will post a brief summary of their progress in WeChat **before 6 PM**.  
+**Daily Updates:** Each team member will post a brief summary of their progress in WeChat **before 6 PM**.  
+
 **Quality of Work:**  
 - Code must be **well-documented** and follow agreed **coding standards**.  
 - Data analysis must be **reproducible** and well-structured.  
