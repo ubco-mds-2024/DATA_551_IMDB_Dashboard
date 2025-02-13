@@ -68,29 +68,29 @@
 ---
 
 ## **3. Work Hours & Availability**  
-  **Expected Work Hours:**  
+**Expected Work Hours:**  
 - Team members will dedicate **at least 4–5 hours per week** to this project.  
 - Core working hours: **Monday to Friday, 2 PM – 5 PM (flexible, with mutual agreement).**  
 - No work is expected on **Sundays** unless otherwise agreed.  
 
-  **Availability & Absences:**  
+**Availability & Absences:**  
 - If unavailable due to personal commitments, team members must notify the group at least **24 hours in advance** (except for emergencies).  
 - Weekly schedules will be updated every **Monday morning** to reflect each member’s availability.  
 
 ---
 
 ## **4. Communication & Collaboration**  
-  **Meeting Frequency:**  
+**Meeting Frequency:**  
 - **Weekly Team Meetings:** Every **Monday at 3 PM** (progress updates).  
 - **Mid-Week Check-in:** **Thursday via WeChat** (quick updates).  
 - **Emergency Meetings:** As needed, scheduled at least **12 hours in advance**.  
 
-  **Meeting Structure:**  
+**Meeting Structure:**  
 - **Meeting Agenda:** Created **at least 24 hours** before the meeting.  
 - **Meeting Minutes:** One team member records notes (responsibility rotates weekly).  
 - **Action Items:** Assigned after each meeting with deadlines.  
 
-  **Communication Tools:**  
+**Communication Tools:**  
 - **WeChat** – Quick questions and daily updates.  
 - **GitHub Issues & Pull Requests** – Task tracking and version control.  
 
@@ -98,15 +98,15 @@
 
 ## **5. Work Style & Collaboration Expectations**  
 - **Daily Updates:** Each team member will post a brief summary of their progress in WeChat **before 6 PM**.  
-  **Quality of Work:**  
+**Quality of Work:**  
 - Code must be **well-documented** and follow agreed **coding standards**.  
 - Data analysis must be **reproducible** and well-structured.  
 
-  **Peer Reviews:**  
+**Peer Reviews:**  
 - **All major work (code, reports, models) must be peer-reviewed** before final submission.  
 - **Constructive feedback is required**, and reviewers should provide actionable suggestions.  
 
-  **Conflict Resolution:**  
+**Conflict Resolution:**  
 - If disagreements arise, **discuss them in a team meeting**.  
 - If unresolved, escalate to an instructor or mentor.  
 
