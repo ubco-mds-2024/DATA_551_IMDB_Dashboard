@@ -36,8 +36,8 @@ Each visualization includes dropdown menus for selecting relevant variables, ena
 #### **Predictions Tab (Not Yet Implemented)**
 - The Predictions Tab currently contains placeholder text.
 - Future improvements could include:
-  - Regression models for predicting movie success based on budget, director, and cast.
-  - Improvements of layout, font size and color matching
+  - Adjust the layout further.
+  - Improve the chart styles such as font size and color matching and so on.
 
 #### **Advanced Filtering Options**
 - The dashboard currently lacks multi-genre filtering and combined filters (e.g., budget range and rating together).
