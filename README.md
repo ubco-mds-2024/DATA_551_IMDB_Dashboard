@@ -24,5 +24,5 @@ Using dataset: https://www.kaggle.com/datasets/raedaddala/top-500-600-movies-of-
 ## **Sketch**
 A dashboard sketch will be linked below showing the interface layout and key visualization elements.
 
-![Dashboard Sketch](img/AppSketch.png)
+![Dashboard Sketch](img/AppSketch.PNG)
 
