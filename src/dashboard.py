@@ -8,7 +8,7 @@ import dash_table
 import re
 import ast
 
-data_path = 'data/final_dataset.csv'
+data_path = '../data/final_dataset.csv'
 df = pd.read_csv(data_path)
 df = df[['Title', 'Year', 'Duration', 'Rating', 'budget', 'grossWorldWide', 'gross_US_Canada', 'opening_weekend_Gross', 'directors', 'writers', 'stars', 'genres']]
 df = df.dropna(subset=['budget', 'grossWorldWide', 'gross_US_Canada'])
@@ -222,7 +222,7 @@ import dash_bootstrap_components as dbc
 import re
 import ast
 
-data_path = 'data/final_dataset.csv'
+data_path = '../data/final_dataset.csv'
 df = pd.read_csv(data_path)
 df = df[['Title', 'Year', 'Duration', 'Rating', 'budget', 'grossWorldWide', 'gross_US_Canada', 'opening_weekend_Gross', 'directors', 'writers', 'stars', 'genres']]
 df = df.dropna(subset=['budget', 'grossWorldWide', 'gross_US_Canada'])
@@ -468,6 +468,7 @@ def plot_scatter(xcol, ycol):
         .encode(
             x=xcol,
             y=ycol,
+            color=alt.Color('genres', legend=alt.Legend(title="Movie Genres")),
             tooltip=['Title', 'Rating']
         )
         .properties(width=600, height=400)  # <--- Set chart dimensions
