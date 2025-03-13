@@ -94,7 +94,7 @@ df['genres'] = df['genres'].apply(lambda x: categorize_genres(str(x)))
 alt.data_transformers.disable_max_rows()
 
 # Setup app and layout/frontend
-app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], title="IMDB Dashboard")
 app.layout = dbc.Container([
     html.H1('IMDB Dashboard (Preview)', style={'textAlign': 'center'}),
     
@@ -317,14 +317,14 @@ app.layout = dbc.Container([
                     html.H5("Scatter Plot"),
                     dcc.Dropdown(
                         id='scatter-x-widget',
-                        value='budget',
+                        value='Rating',
                         options=[{'label': col, 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select X-axis variable"
                     ),
                     dcc.Dropdown(
                         id='scatter-y-widget',
-                        value='Rating',
+                        value='grossWorldWide',
                         options=[{'label': col, 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select Y-axis variable"
@@ -335,14 +335,14 @@ app.layout = dbc.Container([
                     html.H5("Line Plot"),
                     dcc.Dropdown(
                         id='line-x-widget',
-                        value='Year',
+                        value='Rating',
                         options=[{'label': col, 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select X-axis variable"
                     ),
                     dcc.Dropdown(
                         id='line-y-widget',
-                        value='Rating',
+                        value='grossWorldWide',
                         options=[{'label': col, 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select Y-axis variable"
@@ -375,7 +375,7 @@ app.layout = dbc.Container([
                     html.H5("Box Plot"),
                     dcc.Dropdown(
                         id='box-x-widget',
-                        value='budget',
+                        value='Rating',
                         options=[{'label': col, 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns]
                     ),
@@ -385,7 +385,7 @@ app.layout = dbc.Container([
                     html.H5("Pie Chart"),
                     dcc.Dropdown(
                         id='pie-x-widget',
-                        value='wins',
+                        value='grossWorldWide',
                         options=[{'label': col, 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select metric"
@@ -397,7 +397,7 @@ app.layout = dbc.Container([
                             {'label': 'Average', 'value': 'average'},
                             {'label': 'Count', 'value': 'count'}
                         ],
-                        value='sum',
+                        value='average',
                         placeholder="Select Aggregation Type"
                     ),
                     html.Iframe(id='pie_chart', style={'border-width': '0', 'width': '100%', 'height': '450px'})
@@ -468,8 +468,8 @@ def plot_scatter(xcol, ycol):
         .encode(
             x=xcol,
             y=ycol,
-            color=alt.Color('genres', legend=alt.Legend(title="Movie Genres")),
-            tooltip=['Title', 'Rating']
+            tooltip=['Title', 'Rating'],
+            color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
         )
         .properties(width=600, height=400)  # <--- Set chart dimensions
         .interactive()
@@ -486,7 +486,8 @@ def plot_line(xcol, ycol):
         .mark_line()
         .encode(
             x=xcol,
-            y=ycol
+            y=ycol,
+            color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
         )
         .properties(width=600, height=400)
         .interactive()
@@ -502,7 +503,8 @@ def plot_histogram(xcol):
         .mark_bar()
         .encode(
             x=alt.X(xcol, bin=True),
-            y='count()'
+            y='count()',
+            color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
         )
         .properties(width=600, height=400)
         .interactive()
@@ -519,7 +521,8 @@ def plot_bar(xcol):
         .encode(
             x=alt.X('genres', sort='-y'),
             y=alt.Y(f'mean({xcol})', title=f'Average {xcol}'),
-            tooltip=['genres', f'mean({xcol})']
+            tooltip=['genres', f'mean({xcol})'],
+            color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
         )
         .properties(width=600, height=350)
         .interactive()
@@ -535,7 +538,8 @@ def plot_box(xcol):
         .mark_boxplot()
         .encode(
             x='genres',
-            y=xcol
+            y=xcol,
+            color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
         )
         .properties(width=600, height=350)
         .interactive()
@@ -562,7 +566,7 @@ def plot_pie(xcol, agg_type):
         .encode(
             theta=alt.Theta(field=xcol, type='quantitative'),
             color=alt.Color(field='genres', type='nominal', legend=alt.Legend(title="Genres")),
-            tooltip=['genres', xcol]
+            tooltip=['genres', xcol],
         )
         .properties(width=600, height=400)
         .interactive()
