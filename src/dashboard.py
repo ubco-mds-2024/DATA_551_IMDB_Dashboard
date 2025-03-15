@@ -11,7 +11,6 @@ import ast
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.metrics import classification_report, accuracy_score, mean_absolute_error, r2_score
 
 # ---------------------
 # Data Loading & Preprocessing
@@ -92,6 +91,7 @@ def categorize_genres(genres):
         'Disaster': ['Disaster'],
         'Documentary': ['Documentary', 'Stand-Up']
     }
+    
     for category, keywords in category_map.items():
         if any(genre in genres for genre in keywords):
             return category
@@ -103,11 +103,9 @@ alt.data_transformers.disable_max_rows()
 # ---------------------
 # Profitability & Prediction Setup
 # ---------------------
-# Compute profit and gross/budget ratio
 df['profit'] = df['grossWorldWide'] - df['budget']
 df['gross_budget_ratio'] = df['profit'] / df['budget']
 
-# Create profitability category using the given thresholds
 def categorize_profitability(ratio):
     if ratio >= 2.0:
         return "2.0+"
@@ -181,12 +179,25 @@ def predict_profitability(genre, star, director, budget, model_class, model_reg)
     predicted_category = le_profit.inverse_transform(prediction_class)[0]
     prediction_reg = model_reg.predict(movie_features)[0]
     return predicted_category, prediction_reg
+
 # ---------------------
 # App Layout & Callbacks
 # ---------------------
+friendly_names = {
+    'Year': 'Year of Release',
+    'Duration': 'Duration (minutes)',
+    'Rating': 'Movie Rating',
+    'budget': 'Movie Budget',
+    'grossWorldWide': 'Movie Gross Worldwide',
+    'gross_US_Canada': 'Movie Gross in North America',
+    'opening_weekend_Gross': 'Opening Weekend Gross',
+    'profit' : 'Profit',
+    'gross_budget_ratio' : 'Gross/Budget Ratio'
+}
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], title="IMDB Dashboard")
 app.layout = dbc.Container([
-    html.H1('IMDB Dashboard (Preview)', style={'textAlign': 'center'}),
+    html.H1('IMDB Dashboard', style={'textAlign': 'center'}),
     dcc.Tabs([
         dcc.Tab(label='Plots', children=[
             dbc.Row([
@@ -195,14 +206,14 @@ app.layout = dbc.Container([
                     dcc.Dropdown(
                         id='scatter-x-widget',
                         value='Rating',
-                        options=[{'label': col, 'value': col} 
+                        options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select X-axis variable"
                     ),
                     dcc.Dropdown(
                         id='scatter-y-widget',
                         value='grossWorldWide',
-                        options=[{'label': col, 'value': col} 
+                        options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select Y-axis variable"
                     ),
@@ -213,14 +224,14 @@ app.layout = dbc.Container([
                     dcc.Dropdown(
                         id='line-x-widget',
                         value='Rating',
-                        options=[{'label': col, 'value': col} 
+                        options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select X-axis variable"
                     ),
                     dcc.Dropdown(
                         id='line-y-widget',
                         value='grossWorldWide',
-                        options=[{'label': col, 'value': col} 
+                        options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select Y-axis variable"
                     ),
@@ -231,7 +242,7 @@ app.layout = dbc.Container([
                     dcc.Dropdown(
                         id='hist-x-widget',
                         value='Rating',
-                        options=[{'label': col, 'value': col} 
+                        options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns]
                     ),
                     html.Iframe(id='hist_plot', style={'border-width': '0', 'width': '100%', 'height': '450px'})
@@ -243,7 +254,7 @@ app.layout = dbc.Container([
                     dcc.Dropdown(
                         id='bar-x-widget',
                         value='grossWorldWide',
-                        options=[{'label': col, 'value': col} 
+                        options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns]
                     ),
                     html.Iframe(id='bar_chart', style={'border-width': '0', 'width': '100%', 'height': '450px'})
@@ -253,7 +264,7 @@ app.layout = dbc.Container([
                     dcc.Dropdown(
                         id='box-x-widget',
                         value='Rating',
-                        options=[{'label': col, 'value': col} 
+                        options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns]
                     ),
                     html.Iframe(id='box_plot', style={'border-width': '0', 'width': '100%', 'height': '450px'})
@@ -263,7 +274,7 @@ app.layout = dbc.Container([
                     dcc.Dropdown(
                         id='pie-x-widget',
                         value='grossWorldWide',
-                        options=[{'label': col, 'value': col} 
+                        options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select metric"
                     ),
@@ -283,18 +294,6 @@ app.layout = dbc.Container([
         ]),
         dcc.Tab(label='Statistics', children=[
             dbc.Container([
-                dbc.Row([
-                    dbc.Col([
-                        html.H5("DataFrame Preview"),
-                        dash_table.DataTable(
-                            id='df-table',
-                            columns=[{"name": i, "id": i} for i in df.columns],
-                            data=df.to_dict('records'),
-                            page_size=10,
-                            style_table={'overflowX': 'auto'}
-                        )
-                    ], width=12)
-                ], className="mb-4"),
                 dbc.Row([
                     dbc.Col([
                         html.H5("Top 10 by Average Rating"),
@@ -322,6 +321,18 @@ app.layout = dbc.Container([
                         dcc.Input(id='min-works-input', type='number', value=5),
                         html.Br(), html.Br(),
                         html.Iframe(id='stats-bar-chart', style={'border-width': '0', 'width': '100%', 'height': '450px'})
+                    ], width=12)
+                ], className="mb-4"),
+                dbc.Row([
+                    dbc.Col([
+                        html.H5("DataFrame Preview"),
+                        dash_table.DataTable(
+                            id='df-table',
+                            columns=[{"name": i, "id": i} for i in df.columns],
+                            data=df.to_dict('records'),
+                            page_size=10,
+                            style_table={'overflowX': 'auto'}
+                        )
                     ], width=12)
                 ])
             ])
@@ -384,13 +395,19 @@ def plot_line(xcol, ycol):
     ).properties(width=600, height=400).interactive()
     return chart.to_html()
 
+# Updated histogram callback with tooltips.
 @app.callback(
     Output('hist_plot', 'srcDoc'),
     Input('hist-x-widget', 'value'))
 def plot_histogram(xcol):
     chart = alt.Chart(df).mark_bar().encode(
-        x=alt.X(xcol, bin=True),
+        x=alt.X(xcol, bin=alt.Bin(maxbins=30)),
         y='count()',
+        tooltip=[
+            alt.Tooltip(xcol, bin=alt.Bin(maxbins=30), title=xcol),
+            alt.Tooltip('count()', title='Count'),
+            alt.Tooltip('genres:N', title='Genre')
+        ],
         color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
     ).properties(width=600, height=400).interactive()
     return chart.to_html()
