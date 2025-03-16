@@ -1,13 +1,11 @@
 #  IMDB Movie Analysis Dashboard  
 
 ## **Overview**
-The Movie Insights Dashboard is an interactive tool designed to help users explore movie trends and predict ratings based on key attributes. It is aimed at movie enthusiasts, reviewers, and analysts who want to analyze movie statistics, compare features, and estimate potential success before release.
+This Dash-powered web application provides interactive visualizations and predictive analytics for movie profitability using IMDB data. The dashboard allows users to explore key movie attributes, compare trends, and predict the profitability of a movie based on its genre, lead star, director, and budget.  
 
 Using dataset: https://www.kaggle.com/datasets/raedaddala/top-500-600-movies-of-each-year-from-1960-to-2024
 
 **Heroku Link:** https://data551-dash-live-b51d7a902ddb.herokuapp.com/
-
-This Dash-powered web application provides interactive visualizations and predictive analytics for movie profitability using IMDB data. The dashboard allows users to explore key movie attributes, compare trends, and predict the profitability of a movie based on its genre, lead star, director, and budget.  
 
 ##  Features  
 
