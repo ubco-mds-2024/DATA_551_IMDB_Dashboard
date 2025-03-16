@@ -6,7 +6,7 @@ import pandas as pd
 import dash_bootstrap_components as dbc
 import re
 import ast
-
+import os
 # Additional imports for modeling
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
@@ -15,7 +15,8 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 # ---------------------
 # Data Loading & Preprocessing
 # ---------------------
-data_path = '../data/final_dataset.csv'
+data_path = 'data/final_dataset.csv'
+#df = pd.read_csv(data_path).sample(n=1000, random_state=42)
 df = pd.read_csv(data_path)
 df = df[['Title', 'Year', 'Duration', 'Rating', 'budget', 'grossWorldWide', 'gross_US_Canada', 
          'opening_weekend_Gross', 'directors', 'writers', 'stars', 'genres']]
@@ -91,7 +92,6 @@ def categorize_genres(genres):
         'Disaster': ['Disaster'],
         'Documentary': ['Documentary', 'Stand-Up']
     }
-    
     for category, keywords in category_map.items():
         if any(genre in genres for genre in keywords):
             return category
@@ -121,21 +121,26 @@ def categorize_profitability(ratio):
         return "<1.2"
 
 df['profitability_category'] = df['gross_budget_ratio'].apply(categorize_profitability)
+# Remove rows with zero budget or missing profitability data
+df = df[df['budget'] != 0]
+df = df.dropna(subset=['gross_budget_ratio', 'profitability_category'])
+
+# Create a copy for prediction
+df_pred = df.copy()
+
 # ---------------------
 # Create exploded dataset for prediction only
 # ---------------------
-df_pred = df.copy()
 df_pred['star_exploded'] = df_pred['stars'].apply(
     lambda x: [s.strip() for s in str(x).split(',') if s.strip() and s.strip().lower() != 'nan']
 )
 df_pred['director_exploded'] = df_pred['directors'].apply(
     lambda x: [s.strip() for s in str(x).split(',') if s.strip() and s.strip().lower() != 'nan']
 )
-# Explode so that each row now has a single star and a single director
 df_pred = df_pred.explode('star_exploded')
 df_pred = df_pred.explode('director_exploded')
-# For prediction, we need to encode the categorical features.
-# We'll treat the "broad_genre" as the already computed "genres" column.
+
+# For prediction, encode categorical features.
 label_encoders = {}
 for col in ['broad_genre', 'star_exploded', 'director_exploded']:
     le = LabelEncoder()
@@ -146,7 +151,6 @@ for col in ['broad_genre', 'star_exploded', 'director_exploded']:
     label_encoders[col] = le
 
 # Train classification model to predict profitability category.
-# Profitability category is already computed in df as 'profitability_category'.
 from sklearn.metrics import classification_report, accuracy_score
 le_profit = LabelEncoder()
 y_class = df_pred['profitability_category']
@@ -168,9 +172,8 @@ X_train_r, X_test_r, y_train_r, y_test_r = train_test_split(
 rf_reg = RandomForestRegressor(random_state=42)
 rf_reg.fit(X_train_r, y_train_r)
 
-# Update the prediction function to use the exploded columns
+# Update the prediction function using the exploded columns
 def predict_profitability(genre, star, director, budget, model_class, model_reg):
-    # Encode inputs using the new label encoders
     genre_encoded = label_encoders['broad_genre'].transform([genre])[0]
     star_encoded = label_encoders['star_exploded'].transform([star])[0]
     director_encoded = label_encoders['director_exploded'].transform([director])[0]
@@ -191,11 +194,14 @@ friendly_names = {
     'grossWorldWide': 'Movie Gross Worldwide',
     'gross_US_Canada': 'Movie Gross in North America',
     'opening_weekend_Gross': 'Opening Weekend Gross',
-    'profit' : 'Profit',
-    'gross_budget_ratio' : 'Gross/Budget Ratio'
+    'profit': 'Profit',
+    'gross_budget_ratio': 'Gross/Budget Ratio'
 }
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], title="IMDB Dashboard")
+# Expose the Flask server for deployment
+server = app.server
+
 app.layout = dbc.Container([
     html.H1('IMDB Dashboard', style={'textAlign': 'center'}),
     dcc.Tabs([
@@ -217,7 +223,7 @@ app.layout = dbc.Container([
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select Y-axis variable"
                     ),
-                    html.Iframe(id='scatter', style={'border-width': '0', 'width': '100%', 'height': '450px'})
+                    html.Iframe(id='scatter', style={'border-width': '0', 'width': '100%', 'height': '225px'})
                 ]),
                 dbc.Col([
                     html.H5("Line Plot"),
@@ -235,7 +241,7 @@ app.layout = dbc.Container([
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns],
                         placeholder="Select Y-axis variable"
                     ),
-                    html.Iframe(id='line_plot', style={'border-width': '0', 'width': '100%', 'height': '450px'})
+                    html.Iframe(id='line_plot', style={'border-width': '0', 'width': '100%', 'height': '225px'})
                 ]),
                 dbc.Col([
                     html.H5("Histogram"),
@@ -245,7 +251,7 @@ app.layout = dbc.Container([
                         options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns]
                     ),
-                    html.Iframe(id='hist_plot', style={'border-width': '0', 'width': '100%', 'height': '450px'})
+                    html.Iframe(id='hist_plot', style={'border-width': '0', 'width': '100%', 'height': '225px'})
                 ])
             ]),
             dbc.Row([
@@ -257,7 +263,7 @@ app.layout = dbc.Container([
                         options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns]
                     ),
-                    html.Iframe(id='bar_chart', style={'border-width': '0', 'width': '100%', 'height': '450px'})
+                    html.Iframe(id='bar_chart', style={'border-width': '0', 'width': '100%', 'height': '225px'})
                 ]),
                 dbc.Col([
                     html.H5("Box Plot"),
@@ -267,7 +273,7 @@ app.layout = dbc.Container([
                         options=[{'label': friendly_names.get(col, col), 'value': col} 
                                  for col in df.select_dtypes(include=['int64', 'float64']).columns]
                     ),
-                    html.Iframe(id='box_plot', style={'border-width': '0', 'width': '100%', 'height': '450px'})
+                    html.Iframe(id='box_plot', style={'border-width': '0', 'width': '100%', 'height': '225px'})
                 ]),
                 dbc.Col([
                     html.H5("Pie Chart"),
@@ -288,7 +294,7 @@ app.layout = dbc.Container([
                         value='average',
                         placeholder="Select Aggregation Type"
                     ),
-                    html.Iframe(id='pie_chart', style={'border-width': '0', 'width': '100%', 'height': '450px'})
+                    html.Iframe(id='pie_chart', style={'border-width': '0', 'width': '100%', 'height': '225px'})
                 ])
             ])
         ]),
@@ -380,7 +386,7 @@ def plot_scatter(xcol, ycol):
         y=ycol,
         tooltip=['Title', 'Rating'],
         color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
-    ).properties(width=600, height=400).interactive()
+    ).properties(width=250, height=170).interactive()
     return chart.to_html()
 
 @app.callback(
@@ -392,10 +398,9 @@ def plot_line(xcol, ycol):
         x=xcol,
         y=ycol,
         color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
-    ).properties(width=600, height=400).interactive()
+    ).properties(width=250, height=170).interactive()
     return chart.to_html()
 
-# Updated histogram callback with tooltips.
 @app.callback(
     Output('hist_plot', 'srcDoc'),
     Input('hist-x-widget', 'value'))
@@ -409,7 +414,7 @@ def plot_histogram(xcol):
             alt.Tooltip('genres:N', title='Genre')
         ],
         color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
-    ).properties(width=600, height=400).interactive()
+    ).properties(width=280, height=170).interactive()
     return chart.to_html()
 
 @app.callback(
@@ -421,7 +426,7 @@ def plot_bar(xcol):
         y=alt.Y(f'mean({xcol})', title=f'Average {xcol}'),
         tooltip=['genres', f'mean({xcol})'],
         color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
-    ).properties(width=600, height=450).interactive()
+    ).properties(width=250, height=100).interactive()
     return chart.to_html()
 
 @app.callback(
@@ -432,7 +437,7 @@ def plot_box(xcol):
         x='genres',
         y=xcol,
         color=alt.Color('genres:N', legend=alt.Legend(title="Genres"))
-    ).properties(width=600, height=450).interactive()
+    ).properties(width=300, height=100).interactive()
     return chart.to_html()
 
 @app.callback(
@@ -453,7 +458,7 @@ def plot_pie(xcol, agg_type):
         theta=alt.Theta(field=xcol, type='quantitative'),
         color=alt.Color(field='genres', type='nominal', legend=alt.Legend(title="Genres")),
         tooltip=['genres', xcol]
-    ).properties(width=600, height=400).interactive()
+    ).properties(width=300, height=200).interactive()
     return chart.to_html()
 
 @app.callback(
@@ -499,9 +504,6 @@ def update_stats_chart(selected_genre, person_type, min_works):
     ).properties(width=350, height=450).interactive()
     return chart.to_html()
 
-# ---------------------
-# Prediction Tab Callback
-# ---------------------
 @app.callback(
     Output('pred-output', 'children'),
     Input('predict-button', 'n_clicks'),
@@ -527,4 +529,5 @@ def update_prediction(n_clicks, genre, star, director, budget):
     return ""
 
 if __name__ == '__main__':
-    app.run_server(debug=True, host='127.0.0.1', port=8050)
+    port = int(os.environ.get("PORT", 8050))
+    app.run_server(debug=True, host='0.0.0.0', port=port)
